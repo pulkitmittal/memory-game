@@ -9,7 +9,8 @@ var getCards = function() {
 	return cards;
 };
 
-var resetGame = function() {
+var resetGame = function(interval) {
+
 	$$('#game-board .card').each(function(element) {
 		element.removeClassName('open');
 		element.removeClassName('closed');
@@ -52,6 +53,8 @@ var resetGame = function() {
 		});
 	}
 
+	if(interval)
+		clearInterval(interval);
 	return setInterval(setTimer, 1000);
 };
 
@@ -241,11 +244,11 @@ document.observe('dom:loaded', function(){
 				var answer = confirm('Restarting the game will loose your progress. Are you sure you want to restart?');
 				if(answer) {
 					cardsSequence = getCards();
-					interval = resetGame();
+					interval = resetGame(interval);
 				}
 			} else {
 				cardsSequence = getCards();
-				interval = resetGame();
+				interval = resetGame(interval);
 			}
 		} if(Element.match(element, '.modal-backdrop')) {
 			closeAllModals();
@@ -255,7 +258,7 @@ document.observe('dom:loaded', function(){
 			submitScore();
 		}  if(Element.match(element, '.play-again')) {
 			closeModal(Element.up(element, '.modal').id);
-			interval = resetGame();
+			interval = resetGame(interval);
 		} if(element.id == 'show-scores') {
 			showScores();
 		} if(element.id == 'not-you') {
@@ -267,7 +270,7 @@ document.observe('dom:loaded', function(){
 			Element.update('welcome-user-address', readCookie('memory-game-userid') ? 'Hi' : 'Welcome');
 			Element.update('welcome-user-name', readCookie('memory-game-userid') ? readCookie('memory-game-name') : 'Guest');
 			Element.toggle('not-you', readCookie('memory-game-userid') ? true : false);
-			interval = resetGame();
+			interval = resetGame(interval);
 		} else {
 			//event.stop();
 		}
@@ -378,8 +381,5 @@ document.observe('dom:loaded', function(){
 	    }
 	});
 
-	resetGame();
-
-	//gameOver(interval);
-
+	interval = resetGame(interval);
 });
