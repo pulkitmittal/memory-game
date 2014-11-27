@@ -1,6 +1,6 @@
 var getCards = function() {
 	var cards = [];
-	for(var i=1; i<=8; i++) {
+	for(var i=1; i<=no_of_cards; i++) {
 		cards.push(i);
 		cards.push(i);
 	}
@@ -18,19 +18,39 @@ var resetGame = function() {
 	});
 	$$('#game-board .card')[0].addClassName('selected');
 
-	// TODO get these values from server
 	Element.store('current-score', 'value', 0);
 	Element.store('total-moves', 'value', 0);
 	Element.store('pairs-opened', 'value', 0);
 	Element.store('time-lapsed', 'value', 0);
-	Element.store('games-played', 'value', Element.retrieve('games-played', 'value') || 0);
-	Element.store('best-score', 'value', Element.retrieve('best-score', 'value') || 0);
-
 	Element.update('current-score', 0);
-	Element.update('total-moves', 0);
 	Element.update('total-moves', 0);
 	Element.update('pairs-opened', 0);
 	Element.update('time-lapsed', '00:00');
+
+	// get these values from server
+	Element.store('games-played', 'value', 0);
+	Element.store('best-score', 'value', 0);
+	Element.update('games-played', 0);
+	Element.update('best-score', 0);
+	var userid = readCookie('memory-game-userid');
+	if(userid) {
+		new Ajax.Request('getUserStats.php', {
+			method: 'get',
+			parameters: {userid: userid},
+			onSuccess: function(transport) {
+				var response = transport.responseText || "no response text";
+				console.log("Success! \n\n" + response);
+				response = JSON.parse(response);
+				if(response.success && response.obj) {
+					Element.store('games-played', 'value', parseInt(response.obj.count));
+					Element.store('best-score', 'value', parseInt(response.obj.max));
+					Element.update('games-played', response.obj.count);
+					Element.update('best-score', response.obj.max);
+				}
+			},
+			onFailure: function() { alert('Something went wrong. Please try again.'); }
+		});
+	}
 
 	return setInterval(setTimer, 1000);
 };
@@ -48,14 +68,21 @@ var setTimer = function() {
 	Element.update('time-lapsed', h+':'+m);
 };
 
-function validateEmail(email) { 
-    var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-    return re.test(email);
-} 
-
-var closeModal = function() {
+var closeModal = function(id) {
 	Element.removeClassName('modal-backdrop', 'open');
-	Element.removeClassName('modal', 'open');
+	Element.removeClassName(id, 'open');
+};
+
+var openModal = function(id) {
+	Element.addClassName('modal-backdrop', 'open');
+	Element.addClassName(id, 'open');
+};
+
+var closeAllModals = function() {
+	Element.removeClassName('modal-backdrop', 'open');
+	$$('.modal').each(function(element) {
+		Element.removeClassName(element, 'open');
+	});
 };
 
 var gameOver = function(interval) {
@@ -71,16 +98,25 @@ var gameOver = function(interval) {
 	Element.store('best-score', 'value', bestScore);
 	Element.update('best-score', bestScore);
 
-	// TODO open modal to ask for user's name and email
-	// TODO save user details and score
-	// TODO retrieve leaderboard rankings
-
-	Element.addClassName('modal-backdrop', 'open');
-	Element.addClassName('modal', 'open');
 	clearInterval(interval);
+	// show name and email boxes when user id is not found in cookie
+	var userid = readCookie('memory-game-userid'),
+		name = readCookie('memory-game-name'),
+		email = readCookie('memory-game-email');
+	if(readCookie('memory-game-userid')) {
+		sendToServer(userid, name, email);
+	} else {
+		openModal('modal');
+	}
+
 };
 
 var submitScore = function() {
+
+	if(Element.hasClassName('submit-score', 'disabled')) {
+		return;
+	}
+
 	Element.up('user-name').removeClassName('error');
 	Element.next('user-name').update('');
 	Element.up('user-email').removeClassName('error');
@@ -88,7 +124,7 @@ var submitScore = function() {
 
 	var name = Form.Element.getValue('user-name');
 	var email = Form.Element.getValue('user-email');
-	console.log("name", name, "email", email);
+	
 	var error = false;
 	if(!name || name.strip().length == 0) {
 		Element.up('user-name').addClassName('error');
@@ -108,51 +144,132 @@ var submitScore = function() {
 	if(error) {
 		return;
 	} else {
-		// send the data to server
-		
-		var obj = {
-			appId: 'memory-game',
-			userid: 0,
-			user: name.strip(),
-			email: email.strip(),
-			score: Element.retrieve('current-score', 'value') || 0,
-			moves: Element.retrieve('total-moves', 'value') || 0,
-			time: Element.retrieve('time-lapsed', 'value') || 0
-		}
-
-		console.log(obj);
-
-		new Ajax.Request('saveScore.php', {
-			method: 'post',
-			parameters: {obj: JSON.stringify(obj)},
-			onSuccess: function(transport) {
-				var response = transport.responseText || "no response text";
-				alert("Success! \n\n" + response);
-			},
-			onFailure: function() { alert('Something went wrong...'); }
-		});
+		Element.addClassName('submit-score', 'disabled');
+		sendToServer(0, name.strip(), email.strip());
 	}
+};
+
+// send the data to server
+var sendToServer = function(userid, name, email) {
+	var obj = {
+		appId: 'memory-game',
+		userid: userid,
+		user: name,
+		email: email,
+		score: Element.retrieve('current-score', 'value') || 0,
+		moves: Element.retrieve('total-moves', 'value') || 0,
+		time: Element.retrieve('time-lapsed', 'value') || 0
+	}
+
+	new Ajax.Request('saveScore.php', {
+		method: 'post',
+		parameters: {obj: JSON.stringify(obj)},
+		onSuccess: function(transport) {
+			var response = transport.responseText || "no response text";
+			console.log("Success! \n\n" + response);
+			var response = JSON.parse(response);
+			if(response.success) {
+				// update "welcome guest"
+				Element.update('welcome-user-address', 'Hi');
+				Element.update('welcome-user-name', response.name);
+				Element.show('not-you');
+				// set user id and name in cookie
+				createCookie('memory-game-userid', response.userid, 10);
+				createCookie('memory-game-name', response.name, 10);
+				createCookie('memory-game-email', response.email, 10);
+			} else {
+				alert('Something went wrong. Please try again.');
+			}
+			Element.removeClassName('submit-score', 'disabled');
+			closeAllModals();
+			showScores(obj.score);
+		},
+		onFailure: function() { 
+			alert('Something went wrong. Please try again.');
+			Element.removeClassName('submit-score', 'disabled');
+		}
+	});
+};
+
+var showScores = function(currentScore) {
+	openModal('modal1');
+
+	new Ajax.Request('getScores.php', {
+		method: 'get',
+		onSuccess: function(transport) {
+			var response = transport.responseText || "no response text";
+			console.log("Success! \n\n" + response);
+			response = JSON.parse(response);
+			Element.update('ranking', ' ');
+			if(response.success && response.rows && response.rows.length > 0) {
+				var html = '';
+				response.rows.map(function(r, i) {
+					var isThis = readCookie('memory-game-userid')==r.id;
+					if(isThis) {
+						Element.update('ranking', (currentScore ? 'You scored '+currentScore+' in this game! ' : '') +
+						 'You currently rank '+(i+1)+' in the leaderboard.');
+					}
+					html += '<tr '+(isThis ? 'class="highlight"' : '')+'>';
+					html += '<td>'+(i+1)+'</td>';
+					html += '<td>'+r.name+'</td>';
+					html += '<td>'+r.email+'</td>';
+					html += '<td>'+r.score+'</td>';
+					html += '</tr>';
+				});
+				Element.update('table-body', html);
+			} else {
+				Element.update('table-body', '<tr><td colspan="4">No scores submitted yet.</td></tr>');
+			}
+		},
+		onFailure: function() { alert('Something went wrong. Please try again.'); }
+	});
 };
 
 document.observe('dom:loaded', function(){
 	
+	Element.update('welcome-user-address', readCookie('memory-game-userid') ? 'Hi' : 'Welcome');
+	Element.update('welcome-user-name', readCookie('memory-game-userid') ? readCookie('memory-game-name') : 'Guest');
+	Element.toggle('not-you', readCookie('memory-game-userid') ? true : false);
+
 	var cardsSequence = getCards();
 	var interval;
 
 	Event.on(document, 'click', function(event) {
 		var element = event.element();
-		if(Element.match(element, 'button.restart')) {
-			var answer = confirm('Restarting the game will loose your progress. Are you sure you want to restart?');
-			if(answer) {
+		if(element.id == 'restart') {
+			if(Element.retrieve('pairs-opened', 'value') != no_of_cards) {
+				var answer = confirm('Restarting the game will loose your progress. Are you sure you want to restart?');
+				if(answer) {
+					cardsSequence = getCards();
+					interval = resetGame();
+				}
+			} else {
 				cardsSequence = getCards();
 				interval = resetGame();
 			}
-		} if(Element.match(element, '.modal-backdrop') || Element.match(element, '.close') || Element.match(element, '.cancel')) {
-			closeModal();
-		} if(Element.match(element, '.submit')) {
+		} if(Element.match(element, '.modal-backdrop')) {
+			closeAllModals();
+		} if(Element.match(element, '.close') || Element.match(element, '.cancel')) {
+			closeModal(Element.up(element, '.modal').id);
+		} if(element.id == 'submit-score') {
 			submitScore();
-		} else {
+		}  if(Element.match(element, '.play-again')) {
+			closeModal(Element.up(element, '.modal').id);
+			interval = resetGame();
+		} if(element.id == 'show-scores') {
+			showScores();
+		} if(element.id == 'not-you') {
 			event.stop();
+			eraseCookie('memory-game-userid');
+			eraseCookie('memory-game-name');
+			eraseCookie('memory-game-email');
+
+			Element.update('welcome-user-address', readCookie('memory-game-userid') ? 'Hi' : 'Welcome');
+			Element.update('welcome-user-name', readCookie('memory-game-userid') ? readCookie('memory-game-name') : 'Guest');
+			Element.toggle('not-you', readCookie('memory-game-userid') ? true : false);
+			interval = resetGame();
+		} else {
+			//event.stop();
 		}
 	});
 
@@ -162,6 +279,10 @@ document.observe('dom:loaded', function(){
 		}
 		var currentCard = Selector.findElement($$('#game-board .card'), '.selected');
 		var currentIndex = currentCard.previousSiblings().size();
+
+		var noOfCards = no_of_cards || 8;
+		var halfWayIndex = noOfCards/2; // 4 in the case of 8 cards
+		var lastIndex = noOfCards*2-1; // 15 in the case of 8 cards
 		switch (event.keyCode) {
 	        case Event.KEY_LEFT:
 	            event.stop(); // prevent the default action, like horizontal scroll
@@ -172,23 +293,23 @@ document.observe('dom:loaded', function(){
 	            break;
 	        case Event.KEY_RIGHT:
 	            event.stop();
-	            if(currentIndex != 15) {
+	            if(currentIndex != lastIndex) {
 					currentCard.removeClassName('selected');
 		            currentCard.next().addClassName('selected');
 	            }
 	            break;
 	        case Event.KEY_DOWN:
 	            event.stop();
-	            if(currentIndex+4 <= 15) {
+	            if(currentIndex+halfWayIndex <= lastIndex) {
 					currentCard.removeClassName('selected');
-		            currentCard.next(3).addClassName('selected');
+		            currentCard.next(halfWayIndex-1).addClassName('selected');
 	            }
 	            break;
 	        case Event.KEY_UP:
 	            event.stop();
-	            if(currentIndex-4 >= 0) {
+	            if(currentIndex-halfWayIndex >= 0) {
 					currentCard.removeClassName('selected');
-		            currentCard.previous(3).addClassName('selected');
+		            currentCard.previous(halfWayIndex-1).addClassName('selected');
 	            }
 	            break;
 	        case Event.KEY_RETURN:
@@ -234,13 +355,8 @@ document.observe('dom:loaded', function(){
 		        			Element.setStyle(openedCard, {'background-image': 'none'});
 		        			Element.setStyle(currentCard, {'background-image': 'none'});
 
-		        			if(pairsOpened == 8) {
+		        			if(pairsOpened == no_of_cards) {
 		        				gameOver(interval);
-
-			        			/*var again = confirm("Game Over! Your final score is "+currentScore+'. Play again?');
-		        				if(again) {
-		        					interval = resetGame();
-		        				}*/
 		        			}
 
 		        		} else {
@@ -264,6 +380,6 @@ document.observe('dom:loaded', function(){
 
 	resetGame();
 
-	gameOver(interval);
+	//gameOver(interval);
 
 });

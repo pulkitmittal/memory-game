@@ -10,6 +10,16 @@ body {
 	line-height: 20px;
 }
 
+a {
+	color: #0084DD;
+	text-decoration: none;
+}
+
+a:hover, a:focus {
+	color: #0371BB;
+	text-decoration: underline;
+}
+
 p {
 	margin-bottom: 10px
 }
@@ -64,6 +74,13 @@ hr {
 	-webkit-border-radius: 3px;
 	-moz-border-radius: 3px;
 	border-radius: 3px;
+}
+
+.welcome-span {
+	float: right;
+	position: relative;
+	top: -20px;
+	height: 0
 }
 
 .board {
@@ -139,9 +156,17 @@ button.default:hover {
 }
 
 button.restart {
-	width: 100%;
+	width: 48%;
 	font-size: 14px;
 	padding: 1em 1em;
+}
+
+button.show-scores {
+	width: 48%;
+	font-size: 14px;
+	padding: 1em 1em;
+	margin-left: 2%;
+	float: right;
 }
 
 .modal {
@@ -221,6 +246,9 @@ button.restart {
 
 .modal .modal-body {
 	padding: 20px;
+	max-height: 350px;
+	overflow-y: visible;
+	min-height: 150px;
 }
 
 .modal .modal-foot {
@@ -255,9 +283,36 @@ input[type="text"] {
 }
 
 input[type="text"]:focus {
-	border-color: #1F8DD6;
+	border: 1px solid #4D90FE;
+	-webkit-box-shadow: 0px 0px 2px #4D90FE;
+	-moz-box-shadow: 0px 0px 2px #4D90FE;
+	box-shadow: 0px 0px 2px #4D90FE;
+	outline: 0;
 }
 
 form div.label.error input[type="text"] {
 	border-color: #EC2400;
+}
+
+table {
+	border: 1px solid #DDD;
+	width: 100%;
+}
+
+table td, table th {
+	border: 1px solid #DDD;
+	padding: 10px;
+	font-size: 14px;
+}
+
+table th {
+	font-weight: 700
+}
+
+table td.numeric {
+	text-align: right
+}
+
+tr.highlight td {
+	background: #EEE;
 }
