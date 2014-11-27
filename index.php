@@ -60,7 +60,7 @@
 			<button class="close">&times;</button>
 		</div>
 		<div class="modal-body">
-			<p>Great job! You have found all card pairs. Your final score is 3.</p>
+			<p>Great job! You have found all card pairs. Your final score is <span id="final-score"></span>.</p>
 			<p>Please enter your name and email address to compare your ranking with other users.</p>
 			<br/>
 			<form id="save-form" action="save.php" method="POST">

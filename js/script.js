@@ -15,7 +15,7 @@ var resetGame = function(interval) {
 		element.removeClassName('open');
 		element.removeClassName('closed');
 		element.removeClassName('selected');
-		Element.setStyle(element, {'background-image': 'url("img/card_bg.gif")'});
+		Element.setStyle(element, {backgroundImage: 'url("img/card_bg.gif")'});
 	});
 	$$('#game-board .card')[0].addClassName('selected');
 
@@ -40,7 +40,7 @@ var resetGame = function(interval) {
 			parameters: {userid: userid},
 			onSuccess: function(transport) {
 				var response = transport.responseText || "no response text";
-				console.log("Success! \n\n" + response);
+				//console.log("Success! \n\n" + response);
 				response = JSON.parse(response);
 				if(response.success && response.obj) {
 					Element.store('games-played', 'value', parseInt(response.obj.count));
@@ -74,6 +74,9 @@ var setTimer = function() {
 var closeModal = function(id) {
 	Element.removeClassName('modal-backdrop', 'open');
 	Element.removeClassName(id, 'open');
+	$$('#'+id+' input').each(function(element) {
+		Form.Element.setValue(element, '');
+	});
 };
 
 var openModal = function(id) {
@@ -84,7 +87,7 @@ var openModal = function(id) {
 var closeAllModals = function() {
 	Element.removeClassName('modal-backdrop', 'open');
 	$$('.modal').each(function(element) {
-		Element.removeClassName(element, 'open');
+		closeModal(element.id);
 	});
 };
 
@@ -110,6 +113,7 @@ var gameOver = function(interval) {
 		sendToServer(userid, name, email);
 	} else {
 		openModal('modal');
+		Element.update('final-score', Element.retrieve('current-score', 'value') || 0);
 	}
 
 };
@@ -169,7 +173,7 @@ var sendToServer = function(userid, name, email) {
 		parameters: {obj: JSON.stringify(obj)},
 		onSuccess: function(transport) {
 			var response = transport.responseText || "no response text";
-			console.log("Success! \n\n" + response);
+			//console.log("Success! \n\n" + response);
 			var response = JSON.parse(response);
 			if(response.success) {
 				// update "welcome guest"
@@ -201,7 +205,7 @@ var showScores = function(currentScore) {
 		method: 'get',
 		onSuccess: function(transport) {
 			var response = transport.responseText || "no response text";
-			console.log("Success! \n\n" + response);
+			//console.log("Success! \n\n" + response);
 			response = JSON.parse(response);
 			Element.update('ranking', ' ');
 			if(response.success && response.rows && response.rows.length > 0) {
@@ -277,7 +281,7 @@ document.observe('dom:loaded', function(){
 	});
 
 	Event.on(document, 'keydown', function(event) {
-		if(Element.hasClassName('modal', 'open')) {
+		if(Element.hasClassName('modal', 'open') || Element.hasClassName('game-board', 'disabled')) {
 			return;
 		}
 		var currentCard = Selector.findElement($$('#game-board .card'), '.selected');
@@ -286,7 +290,9 @@ document.observe('dom:loaded', function(){
 		var noOfCards = no_of_cards || 8;
 		var halfWayIndex = noOfCards/2; // 4 in the case of 8 cards
 		var lastIndex = noOfCards*2-1; // 15 in the case of 8 cards
-		switch (event.keyCode) {
+
+		var keyID = event.which || event.keyCode;
+		switch (keyID) {
 	        case Event.KEY_LEFT:
 	            event.stop(); // prevent the default action, like horizontal scroll
 	            if(currentIndex != 0) {
@@ -323,20 +329,23 @@ document.observe('dom:loaded', function(){
 	        	}
 	        	else if(!openedCard) { // no other card is open
 	        		currentCard.addClassName('open');
-	        		Element.setStyle(currentCard, {'background-image': 'url("img/colour'+cardsSequence[currentIndex]+'.gif")'});
+	        		Element.setStyle(currentCard, {backgroundImage: 'url("img/colour'+cardsSequence[currentIndex]+'.gif")'});
 	        	} else if (openedCard == currentCard) { // this card is open
 	        		openedCard.removeClassName('open');
 	        	} else { // one other cell is open
 	        		currentCard.addClassName('open');
-	        		Element.setStyle(currentCard, {'background-image': 'url("img/colour'+cardsSequence[currentIndex]+'.gif")'});
+	        		Element.setStyle(currentCard, {backgroundImage: 'url("img/colour'+cardsSequence[currentIndex]+'.gif")'});
 
 	        		// increase total moves
 	        		var totalMoves = Element.retrieve('total-moves', 'value') + 1;
         			Element.store('total-moves', 'value', totalMoves);
         			Element.update('total-moves', totalMoves);
 
+        			Element.addClassName('game-board', 'disabled')
 	        		// add more logic
 	        		setTimeout(function() { // delay because we want to show the user the pair matching
+	        			Element.removeClassName('game-board', 'disabled')
+
 	        			var openedColor = Element.getStyle(openedCard, 'background-image');
 		        		var currentColor = Element.getStyle(currentCard, 'background-image');
 		        		if(openedColor == currentColor) {
@@ -355,8 +364,8 @@ document.observe('dom:loaded', function(){
 		        			currentCard.removeClassName('open');
 		        			openedCard.addClassName('closed');
 		        			currentCard.addClassName('closed');
-		        			Element.setStyle(openedCard, {'background-image': 'none'});
-		        			Element.setStyle(currentCard, {'background-image': 'none'});
+		        			Element.setStyle(openedCard, {backgroundImage: 'none'});
+		        			Element.setStyle(currentCard, {backgroundImage: 'none'});
 
 		        			if(pairsOpened == no_of_cards) {
 		        				gameOver(interval);
@@ -371,8 +380,8 @@ document.observe('dom:loaded', function(){
 
 		        			openedCard.removeClassName('open');
 		        			currentCard.removeClassName('open');
-		        			Element.setStyle(openedCard, {'background-image': 'url("img/card_bg.gif")'});
-		        			Element.setStyle(currentCard, {'background-image': 'url("img/card_bg.gif")'});
+		        			Element.setStyle(openedCard, {backgroundImage: 'url("img/card_bg.gif")'});
+		        			Element.setStyle(currentCard, {backgroundImage: 'url("img/card_bg.gif")'});
 		        		}
 	        		}, 250);
 	        		
