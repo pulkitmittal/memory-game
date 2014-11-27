@@ -1,0 +1,268 @@
+$text-color: #333
+$background-color: #FFF
+$anchor-color: #0084DD
+$border-color: #DDD
+$blue-dark: #1F8DD6
+$red-color: #EC2400
+$modal-transition: opacity 0.3s linear, top 0.3s ease-out
+$modal-shadow: 0 3px 7px rgba(0, 0, 0, 0.3)
+$input-border-color: #4D90FE
+$input-shadow: 0px 0px 2px $input-border-color
+
+html
+  background-color: #d3e1ff
+
+body
+  margin: 0
+  font-family: 'Arial'
+  font-size: 13px
+  color: $text-color
+  line-height: 20px
+
+a
+  color: $anchor-color
+  text-decoration: none
+  &:hover, &:focus
+    color: $blue-dark
+    text-decoration: underline
+
+p
+  margin-bottom: 10px
+
+button
+  display: inline-block
+  zoom: 1
+  line-height: normal
+  white-space: nowrap
+  vertical-align: baseline
+  text-align: center
+  cursor: pointer
+  -webkit-user-drag: none
+  -webkit-user-select: none
+  -moz-user-select: none
+  -ms-user-select: none
+  user-select: none
+  padding: .5em 1em
+  text-decoration: none
+  -webkit-border-radius: 2px
+  -moz-border-radius: 2px
+  border-radius: 2px
+
+strong
+  font-weight: bold
+
+hr
+  border-color: $border-color
+  border-style: inherit
+  border-width: 1px
+  border-bottom: 0
+
+.left
+  float: left
+
+.right
+  float: right
+
+.clearfix
+  clear: both
+
+.main
+  width: 720px
+  height: 420px
+  margin: 20px auto
+  padding: 40px
+  background-color: $background-color
+  -webkit-border-radius: 3px
+  -moz-border-radius: 3px
+  border-radius: 3px
+
+.welcome-span
+  float: right
+  position: relative
+  top: -20px
+  height: 0
+
+.board
+  width: 416px
+  height: 416px
+  border: 2px solid $border-color
+  >
+    div.card
+      width: 100px
+      height: 100px
+      float: left
+      background: url('../img/card_bg.gif') no-repeat 0 0
+      background-size: cover
+      border: 2px solid $background-color
+    .card.selected
+      border: 2px solid $blue-dark
+
+.options
+  width: 290px
+  height: 416px
+
+.logo
+  width: 100%
+  margin-bottom: 10px
+  text-align: center
+
+.game-info
+  height: 250px
+  overflow-y: auto
+  margin-bottom: 10px
+  border: 1px solid $border-color
+  padding: 10px
+  font-size: 14px
+  line-height: 18px
+
+button
+  &.primary
+    background: $blue-dark
+    color: $background-color
+    border: 1px solid $blue-dark
+    width: auto
+    padding: 0.5em 1em
+    &:hover
+      background-image: -webkit-linear-gradient(#6bafdb 0, $anchor-color 100%, rgba(0, 0, 0, 0) 50%)
+      background-image: -moz-linear-gradient(#6bafdb 0, $anchor-color 100%, transparent 50%)
+      background-image: -ms-linear-gradient(#6bafdb 0, $anchor-color 100%, transparent 50%)
+      background-image: -o-linear-gradient(#6bafdb 0, $anchor-color 100%, transparent 50%)
+      background-image: linear-gradient(#6bafdb 0, $anchor-color 100%, rgba(0, 0, 0, 0) 50%)
+  &.default
+    background: $background-color
+    color: #666
+    border: 1px solid #ccc
+    width: auto
+    padding: 0.5em 1em
+    &:hover
+      background-image: -webkit-linear-gradient(#eeeeee 0, #cccccc 100%, rgba(0, 0, 0, 0) 50%)
+      background-image: -moz-linear-gradient(#eeeeee 0, #cccccc 100%, transparent 50%)
+      background-image: -ms-linear-gradient(#eeeeee 0, #cccccc 100%, transparent 50%)
+      background-image: -o-linear-gradient(#eeeeee 0, #cccccc 100%, transparent 50%)
+      background-image: linear-gradient(#eeeeee 0, #cccccc 100%, rgba(0, 0, 0, 0) 50%)
+  &.restart
+    width: 48%
+    font-size: 14px
+    padding: 1em 1em
+  &.show-scores
+    width: 48%
+    font-size: 14px
+    padding: 1em 1em
+    margin-left: 2%
+    float: right
+
+.modal
+  display: none
+  -webkit-transition: $modal-transition
+  -moz-transition: $modal-transition
+  -o-transition: $modal-transition
+  transition: $modal-transition
+  top: -25%
+  position: fixed
+  left: 50%
+  z-index: 1050
+  width: 560px
+  height: auto
+  max-height: 600px
+  min-height: 320px
+  margin-left: -280px
+  background-color: $background-color
+  border: 1px solid #999
+  border: 1px solid rgba(0, 0, 0, 0.3)
+  -webkit-border-radius: 3px
+  -moz-border-radius: 3px
+  border-radius: 3px
+  outline: none
+  -webkit-box-shadow: $modal-shadow
+  -moz-box-shadow: $modal-shadow
+  box-shadow: $modal-shadow
+  -webkit-background-clip: padding-box
+  -moz-background-clip: padding-box
+  background-clip: padding-box
+  padding: 5px
+  font-size: 14px
+  &.open
+    display: block
+    top: 10%
+
+.modal-backdrop
+  display: none
+  opacity: 0.8
+  filter: alpha(opacity = 80)
+  position: fixed
+  top: 0
+  right: 0
+  bottom: 0
+  left: 0
+  z-index: 1040
+  background-color: #000
+  &.open
+    display: block
+
+.close
+  float: right
+  background: none
+  border: none
+  outline: none
+  color: #CDCDCD
+  font-size: 28px
+  padding: 0
+  line-height: 20px
+  &:HOVER
+    color: #BBB
+
+.modal
+  .modal-head
+    padding: 20px
+    border-bottom: 1px solid $border-color
+    font-size: 22px
+  .modal-body
+    padding: 20px
+    max-height: 350px
+    overflow-y: visible
+    min-height: 150px
+  .modal-foot
+    padding: 20px
+    border-top: 1px solid $border-color
+
+form
+  div.label
+    margin-bottom: 15px
+  p.help
+    display: inline
+    margin-left: 10px
+  div.label.error
+    color: $red-color
+    input[type="text"]
+      border-color: $red-color
+
+input[type="text"]
+  padding: 8px 10px
+  width: 240px
+  border: 1px solid #CCC
+  -webkit-border-radius: 3px
+  -moz-border-radius: 3px
+  border-radius: 3px
+  &:focus
+    border: 1px solid $input-border-color
+    -webkit-box-shadow: $input-shadow
+    -moz-box-shadow: $input-shadow
+    box-shadow: $input-shadow
+    outline: 0
+
+table
+  border: 1px solid $border-color
+  width: 100%
+  td
+    border: 1px solid $border-color
+    padding: 10px
+    font-size: 14px
+  th
+    border: 1px solid $border-color
+    padding: 10px
+    font-size: 14px
+    font-weight: 700
+  td.numeric
+    text-align: right
+  tr.highlight td
+    background: #EEE
