@@ -1,6 +1,6 @@
-DROP DATABASE IF EXISTS `u582717137_color`;
-CREATE DATABASE `u582717137_color`;
-USE `u582717137_color`;
+DROP DATABASE IF EXISTS `colour_memory`;
+CREATE DATABASE `colour_memory`;
+USE `colour_memory`;
 DROP TABLE IF EXISTS `player`;
 CREATE TABLE `player` (
   `id` int(11) NOT NULL AUTO_INCREMENT,

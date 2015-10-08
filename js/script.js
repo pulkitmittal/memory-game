@@ -12,7 +12,6 @@ var getCards = function() {
 };
 
 var resetGame = function(interval) {
-
     $$('#game-board .card').each(function(element) {
         element.removeClassName('open');
         element.removeClassName('closed');
@@ -100,7 +99,6 @@ var closeAllModals = function() {
 };
 
 var gameOver = function(interval) {
-
     // increase total games played count
     var gamesPlayed = Element.retrieve('games-played', 'value') + 1;
     Element.store('games-played', 'value', gamesPlayed);
@@ -127,7 +125,6 @@ var gameOver = function(interval) {
 };
 
 var submitScore = function() {
-
     if (Element.hasClassName('submit-score', 'disabled')) {
         return;
     }
